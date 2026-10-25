@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080809">
+  <meta name="description" content="Turn the ingredients in your kitchen into your next great meal.">
+  <title>Recipe Finder · Personal Kitchen Studio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+<a class="skip" href="#ingredients">Skip to ingredient search</a>
+<div class="shell">
+  <header><a class="identity" href="/" aria-label="Recipe Finder home"><span class="logo">R / F</span><span>RECIPE FINDER <span class="brand-sub">/ PERSONAL KITCHEN STUDIO</span></span></a><span class="online">● &nbsp; KITCHEN OPEN</span></header>
+  <main>
+    <section class="hero"><div class="eyebrow">GOOD FOOD. ALREADY WITHIN REACH.</div><h1>Make something<br><span>extraordinary.</span></h1><p>A little inspiration. The ingredients you have.<br class="mobile-break"> Your next great meal starts here.</p><div class="collection"><span class="line"></span>{{ recipe_count }} recipes. Endless possibilities.</div></section>
+    <section class="search-panel" aria-labelledby="search-heading">
+      <div class="section-label" id="search-heading"><span>01</span> YOUR INGREDIENTS</div>
+      <p>What’s in your kitchen?</p>
+      <form method="post" action="/#discover" id="search-form">
+        <label for="ingredients">Add your ingredients, separated by commas</label>
+        <div class="input-row"><input id="ingredients" name="ingredients" type="text" maxlength="5000" value="{{ query }}" placeholder="e.g. egg, tomato, onion, butter" aria-describedby="input-hint{% if error %} input-error{% endif %}" {% if error %}aria-invalid="true"{% endif %} required><button type="submit" id="find-button">Find recipes <span aria-hidden="true">↗</span></button></div>
+        <div class="search-meta"><span id="input-hint">Use ingredient names, without quantities.</span><a href="/" class="clear">Clear search</a></div>
+        {% if error %}<p class="error" id="input-error" role="alert">{{ error }}</p>{% endif %}
+      </form>
+      <div class="try-row"><span>NEED A START?</span><button type="button" class="example" data-ingredients="Egg, Butter, Salt">Egg, butter & salt ↗</button><button type="button" class="example" data-ingredients="Rice, Tomato, Onion">Rice, tomato & onion ↗</button></div>
+    </section>
+    <section id="discover" aria-labelledby="discover-heading">
+      <div class="results-heading"><h2 id="discover-heading"><span>02</span> DISCOVER</h2><span class="result-status" role="status">{% if results is not none %}{{ results|length }} MATCHES · {{ ready }} READY TO COOK{% else %}READY WHEN YOU ARE{% endif %}</span></div>
+      {% if results %}
+      <div class="results-grid">
+      {% for recipe in results %}
+        <article class="recipe-card">
+          <div class="card-top"><span class="recipe-index">RECIPE / {{ '%02d'|format(loop.index) }}</span><span class="badge">{% if not recipe.missing %}✓ READY TO COOK{% else %}{{ recipe.missing|length }} STILL NEEDED{% endif %}</span></div>
+          <h3>{{ recipe.name }}</h3>
+          <div class="match-row"><strong>{{ '%.0f'|format(recipe.percentage) }}<small>%</small></strong><span>INGREDIENT MATCH</span><span class="fraction">{{ recipe.matched|length }}/{{ recipe.matched|length + recipe.missing|length }}</span></div>
+          <div class="meter" role="meter" aria-label="{{ recipe.name }} ingredient match" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ recipe.percentage }}"><span style="width:{{ recipe.percentage }}%"></span></div>
+          <h4>INGREDIENTS YOU HAVE</h4><ul class="chips">{% for item in recipe.matched %}<li>✓ {{ item }}</li>{% endfor %}</ul>
+          {% if recipe.missing %}
+          <h4>STILL NEEDED</h4><ul class="chips missing">{% for item in recipe.missing %}<li>{{ item }}</li>{% endfor %}</ul><div class="locked"><span aria-hidden="true">◇</span> Add the missing ingredients to your search to unlock cooking instructions.</div>
+          {% else %}
+          <details class="instructions"><summary>Cooking instructions <span aria-hidden="true">＋</span></summary><ol>{% for step in recipe.instructions %}<li>{{ step }}</li>{% endfor %}</ol></details>
+          {% endif %}
+        </article>
+      {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon" aria-hidden="true">{% if results is not none %}∅{% else %}↗{% endif %}</div><div class="eyebrow">{% if results is not none %}A FRESH START{% else %}A LITTLE POSSIBILITY{% endif %}</div><h3>{% if results is not none %}No matches just yet.{% else %}Your next great meal starts here.{% endif %}</h3><p>{% if results is not none %}Try another ingredient or check your spelling.<br>Simple names like “tomato” or “egg” work best.{% else %}Tell us what you have. We’ll find what you can make.<br>Complete your ingredient list to unlock the method.{% endif %}</p></div>
+      {% endif %}
+    </section>
+  </main>
+  <footer><span>DESIGNED FOR EVERYDAY COOKING</span><span>MONOCHROME EDITION / 01</span></footer>
+</div>
+</body>
+</html>
